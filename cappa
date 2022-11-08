@@ -10,6 +10,7 @@ Bus.new(\audio, 18); //delay
 Bus.new(\audio, 20, 4); //LFOs
 Bus.new(\audio, 26); //Distortion
 
+
 SynthDef.new(\verb, {                                             //a reverb bus
 	arg input = 16, out = 0, time = 0.6, mix = 0.5;
 	var snd;
@@ -59,7 +60,7 @@ SynthDef.new(\Gamelian, {                                                       
 	arg struct = 0.25, bright = 0.5, poly = 1, damp = 0.7, pos = 0.25, model = 0,
 	dur = 1, mul = 0.5, add = 0, midinote = 60, amp = 0.3, output = 0;
 
-	var snd;
+	var snd, gb1, gb2;
 
 	Line.ar(0, 0, dur * 4, doneAction: 2);
 
@@ -76,7 +77,7 @@ SynthDef.new(\Gamelian, {                                                       
 	Out.ar(output, snd);
 }).add;
 
-SynthDef.new(\Gama2, {
+SynthDef.new(\Gamelian2, {
 	arg out = 0, engine = 0, harm = 0.1, timbre = 0.5, morph = 0.5, gate = 1.0, level = 1, fm_mod = 0,
 	timb_mod = 0, morph_mod = 0, decay = 0.5, lpg_colour = 0.5, mul = 1, freq = 440, pan = 0.0;
 
@@ -99,7 +100,7 @@ SynthDef.new(\NilsLead, {
 	arg out = 0, freq = 444, amp = 1.0, fmult = 1, fres = 0.5, pan = 0.0, att = 0.01, dec = 1, ff = 1.0, res = 0.2, drive = 1.0, freqf = 2000, freqfu = 2;
 	var env, snd, envf;
 
-	env = EnvGen.ar(Env.adsr(0.001, 1.25, 0.0, 0.04));
+	env = EnvGen.ar(Env.adsr(0.001, 1.25, 0.0, 0.04), doneAction: 2);
 	envf = EnvGen.ar(Env.adsr(0.8, 0.8, 0.8, 0.5));
 
 	snd = SinOsc.ar(freq);
@@ -115,7 +116,7 @@ SynthDef.new(\NilsBass, {
 	arg out = 0, freq = 444, amp = 0.5, fmult = 1, fres = 0.5, pan = 0.0, att = 0.01, dec = 1, dur = 0.5;
 	var env, snd;
 
-	env = EnvGen.ar(Env.adsr(0.02, 0.2, 0.1, 0.03));
+	env = EnvGen.ar(Env.adsr(0.02, 0.2, 0.1, 0.03), doneAction: 2);
 
 	snd = SinOsc.ar(freq);
 	snd = RLPF.ar(snd, env.range(5, freq * fmult), fres);
@@ -198,16 +199,6 @@ Pbindef(\NilsBind3,
 	\out, 16, //through the reverb bus
 );
 
-Pbindef(\NilsNoiseBind,
-	\instrument, \NilsLead,
-	\octave, 6,
-	\degree, Pwhite(8.9, 0, 4.1),
-	\amp, 0.3,
-	\delta, 4,
-	\dur, 25,
-	\out, 16, //through the reverb bus
-);
-
 Pbindef(\GamelianBind,
 	\instrument, \Gamelian,
 	\octave, Pwhite(3, 4),
@@ -241,7 +232,7 @@ Pbindef(\GamelianBind2,
 );
 
 Pbindef(\GamelianBind3,
-\instrument, \Gama2,
+\instrument, \Gamelian2,
 	\octave, 5,
  	\degree, Pseq([3, 6, 2, 11], inf),
  	\scale, Scale.major(Tuning.just),
@@ -260,7 +251,7 @@ Pbindef(\GamelianBind3,
  );
 
 Pbindef(\GamelianBind4,
-\instrument, \Gama2,
+\instrument, \Gamelian2,
 	\octave, 8,
  	\degree, Pseq([3, 6, 2, 11], inf),
  	\scale, Scale.major(Tuning.just),
@@ -295,27 +286,27 @@ SystemClock.sched(1, {
 
 
 	SystemClock.sched(2, {
-Pbindef(\GamelianBind3).play(quant: 4);
-nil; });
-
-SystemClock.sched(4, {
-Pbindef(\NilsBind1).play(quant: 4);
+gb3 = Pbindef(\GamelianBind3).play(quant: 4);
 nil; });
 
 SystemClock.sched(10, {
-Pbindef(\NilsBind2).play(quant: 4);
+nb2 = Pbindef(\NilsBind2).play(quant: 4);
 nil; });
 
-	SystemClock.sched(22, {
-Pbindef(\GamelianBind2).play(quant: 5);
-nil; });
 
+	SystemClock.sched(12, {
+nb1 = Pbindef(\NilsBind1).play(quant: 4);
+nil; });
 
 SystemClock.sched(15, {
 Pbindef(\NilsBind1,
 		\freqf, 3000,
 		\freqfu, 2.5,
 	);
+nil; });
+
+	SystemClock.sched(22, {
+gb2 = Pbindef(\GamelianBind2).play(quant: 5);
 nil; });
 
 SystemClock.sched(20, {
@@ -338,11 +329,6 @@ Pbindef(\NilsBind1,
 	);
 nil; });
 
-// SystemClock.sched(40, {
-// 	Pbindef(\NilsNoise).play(quant: 4);
-// nil; });
-
-
 SystemClock.sched(50, {
 Pbindef(\GamelianBind3,
 		\octave, 2,
@@ -359,8 +345,24 @@ Pbindef(\NilsBind1,
 	);
 nil; });
 
+SystemClock.sched(55, {
+Pbindef(\NilsBind3,
+		\degree, Pseq([0, 0], inf),
+		\dur, 1,
+		\delta, 1,
+	);
+nil; });
+
 	SystemClock.sched(70, {
-Pbindef(\GamelianBind4).play(quant: 5);
+gb4 = Pbindef(\GamelianBind4).play(quant: 5);
+nil; });
+
+SystemClock.sched(70, {
+Pbindef(\NilsBind3,
+		\degree, Pseq([0, 4.1], inf),
+		\dur, 2,
+		\delta, 4,
+	);
 nil; });
 
 
@@ -370,7 +372,7 @@ Pbindef(\GamelianBind4,
 	);
 nil; });
 
-SystemClock.sched(90, {
+nb11 = SystemClock.sched(90, {
 	Pbindef(\NilsBind11).play(quant: 4);
 	nil; });
 
@@ -381,7 +383,7 @@ Pbindef(\GamelianBind4,
 	);
 nil; });
 
-SystemClock.sched(110, { //stop it an turn it into brown noise
+/*SystemClock.sched(110, { //stop it an turn it into brown noise
 	Pbindef(\GamelianBind4).stop;
 	x = {
 		arg gate = 1;
@@ -390,16 +392,59 @@ SystemClock.sched(110, { //stop it an turn it into brown noise
 		snd = WhiteNoise.ar(0.05);
 		snd = RLPF.ar(snd, SinOsc.ar(0.05).range(10, 600));
 
-		snd = snd * EnvGen.ar(Env.new(releaseNode: 1), gate, doneAction:2);
+		snd = snd * EnvGen.ar(Env.new(releaseNode: 1), gate, doneAction: 2);
 
 		Out.ar(0, [snd, snd]);
 	}.play;
 
-		nil; });
+nil; });
 
 SystemClock.sched(125, {
 	x.set(\gate, 0);
+nil; });*/
+
+SystemClock.sched(135, {
+ gb4.stop;
+nil; });
+
+SystemClock.sched(135, {
+  gb3.stop;
+nil; });
+
+
+SystemClock.sched(145, {
+  nb1.stop;
+nil; });
+
+SystemClock.sched(145, {
+  nb11.stop;
+nil; });
+
+SystemClock.sched(145, {
+ nb2.stop;
+nil; });
+
+
+SystemClock.sched(150, {
+Pbindef(\NilsBind3,
+		\degree, Pseq([0, 0], inf),
+		\dur, 1,
+		\delta, 1,
+	);
+nil; });
+
+SystemClock.sched(150, { //stop it an turn it into brown noise
+	Pbindef(\GamelianBind2,
+		\amp, 0.3,
+		\bright, 0.5,
+		\octave, Pwhite(3, 4, 5),
+		\degree, Pwhite([0, 3, 4.1, 6, 2, 8.9, 11], inf),
+	);
 	nil; });
+
+SystemClock.sched(170, {
+Pbindef(\NilsBind1).play(quant: 4);
+nil; });
 
 s.record(numChannels: 24, duration: 240)
 )
