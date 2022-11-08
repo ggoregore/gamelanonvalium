@@ -365,7 +365,7 @@ nil; });
 
 
 SystemClock.sched(85, {
-Pbindef(\GamelanBind4,
+Pbindef(\GamelianBind4,
 		\octave, 7
 	);
 nil; });
@@ -376,13 +376,13 @@ SystemClock.sched(90, {
 
 
 SystemClock.sched(95, {
-Pbindef(\GamelanBind4,
+Pbindef(\GamelianBind4,
 		\octave, 4
 	);
 nil; });
 
 SystemClock.sched(110, { //stop it an turn it into brown noise
-	Pbindef(\GamelanBind11).stop;
+	Pbindef(\GamelianBind4).stop;
 	x = {
 		arg gate = 1;
 		var snd;
@@ -401,5 +401,5 @@ SystemClock.sched(125, {
 	x.set(\gate, 0);
 	nil; });
 
-//s.record(numChannels: 24, duration: 160)
+s.record(numChannels: 24, duration: 240)
 )
